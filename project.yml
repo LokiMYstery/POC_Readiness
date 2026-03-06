@@ -1,0 +1,46 @@
+name: ReadinessPOC
+options:
+  bundleIdPrefix: com.unrush
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1"
+
+targets:
+  ReadinessPOC:
+    type: application
+    platform: iOS
+    sources:
+      - path: ReadinessPOC
+        excludes:
+          - "*.entitlements"
+          - "Info.plist"
+    info:
+      path: ReadinessPOC/Info.plist
+      properties:
+        UILaunchScreen: {}
+        CFBundleDisplayName: "就绪度"
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        NSHealthShareUsageDescription: "就绪度需要读取您的健康数据（步数、运动、睡眠、心率等）来计算身体就绪指数。"
+    entitlements:
+      path: ReadinessPOC/ReadinessPOC.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access:
+          - health-records
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.unrush.readinesspoc.rick
+        CODE_SIGN_ENTITLEMENTS: ReadinessPOC/ReadinessPOC.entitlements
+        INFOPLIST_FILE: ReadinessPOC/Info.plist
+        DEVELOPMENT_TEAM: ""
+    dependencies:
+      - sdk: HealthKit.framework
+      - sdk: WeatherKit.framework
+      - sdk: CoreLocation.framework
