@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Debug 控制面板
 struct DebugPanelView: View {
     @ObservedObject var viewModel: ReadinessViewModel
     @ObservedObject private var debug: DebugState
@@ -12,27 +11,18 @@ struct DebugPanelView: View {
 
     var body: some View {
         Form {
-            // 开关
             Section {
                 Toggle("启用 Debug 覆盖", isOn: $debug.isEnabled)
                     .tint(.orange)
             }
 
             if debug.isEnabled {
-                // Global
                 globalSection
-
-                // Circadian
                 circadianSection
-
-                // Activity
                 activitySection
-
-                // Recovery
                 recoverySection
             }
 
-            // 输出预览
             outputPreviewSection
         }
         .navigationTitle("Debug 面板")
@@ -47,8 +37,6 @@ struct DebugPanelView: View {
         .onChange(of: debug.stepsTodayOverride) { _ in viewModel.recalculate() }
         .onChange(of: debug.sleepDurationOverride) { _ in viewModel.recalculate() }
     }
-
-    // MARK: - Global Section
 
     private var globalSection: some View {
         Section("全局") {
@@ -80,8 +68,6 @@ struct DebugPanelView: View {
         }
     }
 
-    // MARK: - Circadian Section
-
     private var circadianSection: some View {
         Section("节律与日照") {
             Toggle("WeatherKit 数据", isOn: $debug.weatherKitEnabled)
@@ -99,8 +85,6 @@ struct DebugPanelView: View {
             }
         }
     }
-
-    // MARK: - Activity Section
 
     private var activitySection: some View {
         Section("活动与代谢") {
@@ -130,8 +114,6 @@ struct DebugPanelView: View {
         }
     }
 
-    // MARK: - Recovery Section
-
     private var recoverySection: some View {
         Section("睡眠与恢复") {
             Toggle("睡眠数据", isOn: $debug.recoveryEnabled)
@@ -155,8 +137,6 @@ struct DebugPanelView: View {
         }
     }
 
-    // MARK: - Output Preview
-
     private var outputPreviewSection: some View {
         Section("输出预览") {
             if let result = viewModel.result {
@@ -167,6 +147,13 @@ struct DebugPanelView: View {
                         Spacer()
                         Text("\(Int(result.overallScore))")
                             .font(.title.weight(.bold))
+                    }
+
+                    HStack {
+                        Text("档位")
+                        Spacer()
+                        Text("\(result.band.rawValue) / 5")
+                            .fontWeight(.medium)
                     }
 
                     Divider()
@@ -185,27 +172,21 @@ struct DebugPanelView: View {
 
                     Divider()
 
-                    Text("总览文案")
+                    Text("标题")
                         .font(.caption.weight(.semibold))
-                    Text(result.text.overviewSentence)
+                    Text(result.text.heroTitle)
+                        .font(.caption)
+                        .foregroundColor(.primary)
+
+                    Text("副文案")
+                        .font(.caption.weight(.semibold))
+                    Text(result.text.heroSubtitle)
                         .font(.caption)
                         .foregroundColor(.secondary)
 
-                    Text("节律")
+                    Text("摘要")
                         .font(.caption.weight(.semibold))
-                    Text(result.text.circadianExplanation)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Text("活动")
-                        .font(.caption.weight(.semibold))
-                    Text(result.text.activityExplanation)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-
-                    Text("恢复")
-                        .font(.caption.weight(.semibold))
-                    Text(result.text.recoveryExplanation)
+                    Text(result.text.summaryLine)
                         .font(.caption)
                         .foregroundColor(.secondary)
 
@@ -215,22 +196,6 @@ struct DebugPanelView: View {
                         Text(hint)
                             .font(.caption)
                             .foregroundColor(.orange)
-                    }
-
-                    // Sleep Debt Bonus
-                    if result.sleepDebtBonus > 0 {
-                        Divider()
-                        HStack {
-                            Text("Sleep Debt Bonus")
-                                .font(.caption.weight(.semibold))
-                            Spacer()
-                            Text("+\(String(format: "%.0f", result.sleepDebtBonus))")
-                                .font(.caption.weight(.bold))
-                                .foregroundColor(.purple)
-                        }
-                        Text(result.sleepDebtBonusReasons.map(\.rawValue).joined(separator: ", "))
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
                     }
                 }
             } else {
@@ -247,8 +212,6 @@ struct DebugPanelView: View {
             }
         }
     }
-
-    // MARK: - Helpers
 
     private func sliderRow(_ label: String, value: Binding<Double>, range: ClosedRange<Double>, unit: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {

@@ -1,96 +1,112 @@
 import SwiftUI
 
-/// 三段分色圆环图
-struct RingChartView: View {
-    let subScores: [SubScore]
-    let overallScore: Double
+struct ReadinessHeroCardView: View {
+    let result: ReadinessResult
 
-    private let ringWidth: CGFloat = 18
-    private let ringSize: CGFloat = 200
+    private let dotSizes: [CGFloat] = [10, 16, 24, 34, 46, 34, 24, 16, 10]
 
     var body: some View {
-        ZStack {
-            // 底部灰色背景环
-            Circle()
-                .stroke(Color(.systemGray5), lineWidth: ringWidth)
-                .frame(width: ringSize, height: ringSize)
+        VStack(spacing: 20) {
+            HStack {
+                Text("当前状态表现")
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(.white.opacity(0.72))
 
-            // 分段彩色环
-            ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
-                Circle()
-                    .trim(from: segment.start, to: segment.end)
-                    .stroke(
-                        segment.color,
-                        style: StrokeStyle(lineWidth: ringWidth, lineCap: .round)
+                Spacer()
+
+                Text("\(Int(result.overallScore))")
+                    .font(.caption.weight(.semibold).monospacedDigit())
+                    .foregroundColor(.white.opacity(0.86))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.08))
                     )
-                    .frame(width: ringSize, height: ringSize)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.8).delay(Double(index) * 0.15), value: subScores.count)
+            }
+            .overlay(alignment: .center) {
+                Rectangle()
+                    .fill(Color.white.opacity(0.12))
+                    .frame(height: 1)
+                    .padding(.horizontal, 64)
             }
 
-            // 中心内容
-            VStack(spacing: 4) {
-                Text("\(Int(overallScore))")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(scoreGradient)
+            HStack(spacing: 10) {
+                ForEach(Array(dotSizes.enumerated()), id: \.offset) { index, size in
+                    Circle()
+                        .fill(dotColor(at: index))
+                        .frame(width: size, height: size)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(index == currentDotIndex ? 0.22 : 0), lineWidth: 2)
+                        )
+                        .animation(.easeInOut(duration: 0.45).delay(Double(index) * 0.03), value: result.band.rawValue)
+                }
+            }
+            .frame(maxWidth: .infinity)
 
-                Text("就绪度")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            VStack(spacing: 10) {
+                Text(result.text.heroTitle)
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+
+                Text(result.text.heroSubtitle)
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.white.opacity(0.84))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 24)
+        .frame(maxWidth: .infinity)
+        .background(cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
     }
 
-    // MARK: - 分段计算
-
-    private struct Segment {
-        let start: CGFloat
-        let end: CGFloat
-        let color: Color
+    private var currentDotIndex: Int {
+        max(result.band.rawValue - 1, 0)
     }
 
-    private var segments: [Segment] {
-        guard !subScores.isEmpty else { return [] }
-
-        let totalContrib = subScores.reduce(0.0) { $0 + $1.contributionPercent }
-        guard totalContrib > 0 else { return [] }
-
-        let gap: CGFloat = 0.015  // 段间间隙
-        var result: [Segment] = []
-        var currentStart: CGFloat = 0
-
-        for sub in subScores.sorted(by: { $0.contributionPercent > $1.contributionPercent }) {
-            let proportion = CGFloat(sub.contributionPercent / totalContrib)
-            let segmentLength = max(proportion - gap, 0.01)
-            let end = currentStart + segmentLength
-
-            result.append(Segment(
-                start: currentStart,
-                end: min(end, 1.0),
-                color: color(for: sub.id)
-            ))
-
-            currentStart = end + gap
+    private func dotColor(at index: Int) -> Color {
+        guard index <= currentDotIndex else {
+            return Color.white.opacity(index == currentDotIndex + 1 ? 0.22 : 0.14)
         }
 
-        return result
+        let opacity = 0.42 + (Double(index + 1) / Double(max(currentDotIndex + 1, 1))) * 0.48
+        return paletteBaseColor.opacity(opacity)
     }
 
-    private func color(for kind: FactorKind) -> Color {
-        switch kind {
-        case .circadian: return .orange
-        case .activity:  return .green
-        case .recovery:  return .blue
+    private var paletteBaseColor: Color {
+        switch (result.mode, result.band) {
+        case (.day, .veryLow): return Color(red: 0.88, green: 0.47, blue: 0.47)
+        case (.day, .low): return Color(red: 0.91, green: 0.58, blue: 0.35)
+        case (.day, .medium): return Color(red: 0.84, green: 0.72, blue: 0.30)
+        case (.day, .good): return Color(red: 0.43, green: 0.77, blue: 0.39)
+        case (.day, .high): return Color(red: 0.37, green: 0.50, blue: 0.93)
+        case (.night, .veryLow): return Color(red: 0.39, green: 0.50, blue: 0.90)
+        case (.night, .low): return Color(red: 0.44, green: 0.76, blue: 0.58)
+        case (.night, .medium): return Color(red: 0.84, green: 0.72, blue: 0.30)
+        case (.night, .good): return Color(red: 0.90, green: 0.56, blue: 0.33)
+        case (.night, .high): return Color(red: 0.88, green: 0.43, blue: 0.43)
         }
     }
 
-    private var scoreGradient: LinearGradient {
-        let scoreColor: Color = overallScore >= 70 ? .green :
-                                overallScore >= 50 ? .orange : .red
-        return LinearGradient(
-            colors: [scoreColor, scoreColor.opacity(0.7)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+    private var cardBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.47, green: 0.47, blue: 0.49),
+                    Color(red: 0.40, green: 0.40, blue: 0.42)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        }
     }
 }
