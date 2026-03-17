@@ -4,6 +4,7 @@ struct ReadinessHeroCardView: View {
     let result: ReadinessResult
 
     private let dotSizes: [CGFloat] = [10, 16, 24, 34, 46, 34, 24, 16, 10]
+    private let centerDotIndex = 4
 
     var body: some View {
         VStack(spacing: 20) {
@@ -67,7 +68,7 @@ struct ReadinessHeroCardView: View {
     }
 
     private var currentDotIndex: Int {
-        max(result.band.rawValue - 1, 0)
+        centerDotIndex
     }
 
     private func dotColor(at index: Int) -> Color {
@@ -75,8 +76,7 @@ struct ReadinessHeroCardView: View {
             return Color.white.opacity(index == currentDotIndex + 1 ? 0.22 : 0.14)
         }
 
-        let opacity = 0.42 + (Double(index + 1) / Double(max(currentDotIndex + 1, 1))) * 0.48
-        return paletteBaseColor.opacity(opacity)
+        return paletteBaseColor
     }
 
     private var paletteBaseColor: Color {
@@ -98,8 +98,8 @@ struct ReadinessHeroCardView: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    Color(red: 0.47, green: 0.47, blue: 0.49),
-                    Color(red: 0.40, green: 0.40, blue: 0.42)
+                    paletteBaseColor.opacity(0.82),
+                    Color(red: 0.32, green: 0.33, blue: 0.37)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

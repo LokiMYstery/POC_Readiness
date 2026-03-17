@@ -5,14 +5,14 @@ enum SunlightAdjuster {
 
     struct Config {
         /// 日出后提升持续时间（分钟）
-        var afterSunriseBoostDuration: Double = 120
+        var afterSunriseBoostDuration: Double = 150
         /// 日出后最大提升
-        var afterSunriseMaxBoost: Double = 5
+        var afterSunriseMaxBoost: Double = 6
 
         /// 日落后下降持续时间（分钟）
-        var afterSunsetDecayDuration: Double = 180
+        var afterSunsetDecayDuration: Double = 240
         /// 日落后最大下降
-        var afterSunsetMaxDecay: Double = -8
+        var afterSunsetMaxDecay: Double = -10
 
         static let `default` = Config()
     }

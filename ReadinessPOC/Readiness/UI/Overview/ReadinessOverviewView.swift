@@ -14,12 +14,6 @@ struct ReadinessOverviewView: View {
                 } else if let result = viewModel.result {
                     ReadinessHeroCardView(result: result)
 
-                    Text(result.text.summaryLine)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 18)
-
                     if let hint = result.text.missingHint {
                         missingHintBar(hint)
                     }

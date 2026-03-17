@@ -30,7 +30,7 @@ enum CircadianScorer {
         var result = adjusted
         if global.mode == .day {
             if global.isHoliday == true || global.isWeekend {
-                result = min(result + 4, 80)
+                result += 2
             }
         }
 

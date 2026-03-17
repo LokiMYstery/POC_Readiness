@@ -36,28 +36,28 @@ enum TextTokens {
         case .day:
             switch band {
             case .veryLow:
-                return "当前清醒状态偏低，先用更轻的节奏把身体和注意力带起来。"
+                return "现在更适合先放慢一点，从轻任务和基础照顾开始。"
             case .low:
-                return "当前清醒状态略弱，适合先把自己拉回稳定区间。"
+                return "先把节奏放稳一点，给自己一点缓冲，再慢慢提起来。"
             case .medium:
-                return "当前清醒状态稳定，适合维持手头节奏。"
+                return "状态还算稳，按现在的节奏往前走会比较舒服。"
             case .good:
-                return "当前清醒状态良好，适合推进有明确目标的任务。"
+                return "这会儿适合推进重点事项，但还是记得给自己留余量。"
             case .high:
-                return "当前清醒状态很饱满，适合处理需要集中度的事情。"
+                return "现在是比较能出活的时候，可以安排更需要专注的事情。"
             }
         case .night:
             switch band {
             case .veryLow:
-                return "当前睡意还弱，先别强迫自己立刻入睡。"
+                return "这会儿还不用急着睡，先把环境放松下来会更自然。"
             case .low:
-                return "当前已经进入放松区间，可以开始把节奏往下收。"
+                return "可以开始慢慢收尾，让自己舒服地进入休息前的节奏。"
             case .medium:
-                return "当前睡意正在累积，适合结束高刺激内容。"
+                return "现在适合把高刺激内容停下来，给自己一点安静的过渡。"
             case .good:
-                return "当前已经比较适合入睡，尽量别再把身体提起来。"
+                return "这会儿已经比较适合睡了，尽量别再把自己弄清醒。"
             case .high:
-                return "当前睡意很强，直接进入休息流程会更顺。"
+                return "现在就去休息会更顺，也算是在照顾明天的自己。"
             }
         }
     }
@@ -76,57 +76,57 @@ enum TextTokens {
     ) -> String {
         switch (mode, kind) {
         case (.day, .circadian):
-            if score >= 72 { return "当前节律窗口已经打开，清醒感在托着状态" }
-            if score >= 58 { return "当前节律处在可用区间，足够维持正常推进" }
-            return "当前节律还没完全撑起来，启动感会偏弱"
+            if score >= 72 { return "这会儿节律状态不错，适合把重要任务往前放一放" }
+            if score >= 58 { return "现在的节奏还算稳，按部就班地推进会比较省力" }
+            return "现在还没完全进入最好状态，先从轻一点的事情开始会更顺"
         case (.night, .circadian):
-            if score >= 76 { return "夜间下行窗口已经形成，身体更容易往休息状态走" }
-            if score >= 60 { return "夜间节律正在往下收，已经开始有入睡条件" }
-            return "现在还没完全进入夜间窗口，困意不会那么顺"
+            if score >= 76 { return "现在已经到了比较适合休息的时段，可以安心去睡" }
+            if score >= 60 { return "这会儿可以开始收尾，把灯光和注意力一起放下来" }
+            return "现在还不算很晚，先别催自己睡，慢慢放松就好"
         case (.day, .activity):
-            if score >= 76 { return "身体已经被适度激活，能量和清醒感更容易维持" }
-            if score >= 60 { return "当前活动量足够托住清醒状态，不需要额外补太多刺激" }
-            return "身体还没完全被激活，能量感会有点发沉"
+            if score >= 76 { return "身体已经活动开了，这会儿做事会更容易进入状态" }
+            if score >= 60 { return "活动量基本够用，先照着现在的节奏继续就可以" }
+            return "身体还没完全热起来，先起身动一动会比硬扛更舒服"
         case (.night, .activity):
-            if score >= 76 { return "今天身体消耗已经到位，入睡阻力会更小" }
-            if score >= 58 { return "今天的活动量基本够用，睡意会慢慢接上来" }
-            return "今天身体消耗还不够，睡意累积会偏慢"
+            if score >= 76 { return "今天身体已经消耗得差不多了，这会儿休息会更容易进入状态" }
+            if score >= 58 { return "今天活动量基本够用，先安静下来，睡意通常会更顺一点" }
+            return "今天活动偏少一些，先别着急睡，给自己一点放松和缓冲时间"
         case (.day, .recovery):
             let hours = inputs.recovery.sleepDurationLastNightHours ?? 0
-            if hours >= 7 { return "昨夜恢复给今天托了底，状态不太容易一下掉下去" }
-            if hours >= 6 { return "昨夜恢复一般，今天需要更依赖节奏和轻激活来维持" }
-            return "昨夜恢复不足，今天更容易出现发沉和起不来的感觉"
+            if hours >= 7 { return "昨晚休息得还不错，今天可以更从容地安排事情" }
+            if hours >= 6 { return "昨晚恢复一般，今天把节奏放稳一点会更舒服" }
+            return "昨晚休息不太够，今天先对自己温和一点，别一开始就拉太满"
         case (.night, .recovery):
             let hours = inputs.recovery.sleepDurationLastNightHours ?? 0
-            if hours < 5 { return "昨夜睡得偏少，睡眠压力现在已经很明显了" }
-            if hours < 6 { return "昨夜睡眠偏少，困意会比平时更早接上来" }
-            if hours < 7 { return "睡意正在按正常速度累积，已经开始适合收尾" }
-            return "昨夜睡得比较足，现在的睡意主要还得靠节律往下带"
+            if hours < 5 { return "昨晚睡得偏少，今晚可以早点收尾，别再硬撑了" }
+            if hours < 6 { return "昨晚休息不太够，今晚更适合早点放下事情，优先照顾睡眠" }
+            if hours < 7 { return "今晚可以开始收一收，让自己慢慢进入休息状态" }
+            return "昨晚睡得还可以，如果现在还不困，也不用给自己太大压力"
         }
     }
 
     static func softAdvice(band: ReadinessBand, mode: ReadinessMode, primaryKind: FactorKind?) -> String {
         switch (mode, band) {
         case (.day, .veryLow):
-            return primaryKind == .recovery ? "先补水、降低任务难度，给自己一个短恢复窗口" : "先站起来走一走，再回到低认知任务"
+            return primaryKind == .recovery ? "先补水、放低一点任务难度，给自己留一个短恢复窗口" : "先起来走一走，再回到不那么费脑的事情上"
         case (.day, .low):
-            return "先把节奏拉稳，清掉一件小任务后再决定要不要加速"
+            return "先把节奏放稳，做完一件小事再决定要不要提速"
         case (.day, .medium):
-            return "先维持当前节奏，尽量减少频繁切换"
+            return "维持现在的节奏，少一点来回切换会更轻松"
         case (.day, .good):
-            return "适合推进明确的任务，但别一下把体力和注意力都打满"
+            return "适合推进明确任务，但别一下把精力和体力全用满"
         case (.day, .high):
-            return "适合处理高集中度任务，也记得给后面留一点余量"
+            return "适合安排高专注任务，也记得给后面留一点缓冲"
         case (.night, .veryLow):
-            return "先保持低刺激环境，别太早把自己按进睡眠流程"
+            return "先把环境调得柔和一点，别太早逼自己进入睡眠流程"
         case (.night, .low):
-            return "可以先调暗灯光和声音，把身体慢慢带进放松状态"
+            return "可以先调暗灯光和声音，让身体慢慢放松下来"
         case (.night, .medium):
-            return "把高刺激内容停在这一轮，开始进入收尾流程"
+            return "把高刺激内容停在这一轮，开始做些收尾和安静下来的动作"
         case (.night, .good):
-            return "适合洗漱、调暗灯光，尽量不要再补新的兴奋点"
+            return "适合去洗漱、关暗一点灯，尽量别再给自己新的兴奋点"
         case (.night, .high):
-            return "现在直接去休息会更顺，别再给自己额外提神"
+            return "现在直接去休息会更顺，别再继续提神了"
         }
     }
 

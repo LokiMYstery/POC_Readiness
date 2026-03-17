@@ -18,67 +18,72 @@ final class ActivityProvider {
         let startOfDay = calendar.startOfDay(for: now)
         let twoHoursAgo = calendar.date(byAdding: .hour, value: -2, to: now) ?? now
 
+        let stepsToday = await querySum(
+            identifier: .stepCount,
+            unit: .count(),
+            start: startOfDay,
+            end: now
+        )
+        let stepsLast2h = await querySum(
+            identifier: .stepCount,
+            unit: .count(),
+            start: twoHoursAgo,
+            end: now
+        )
+        let activeEnergy = await querySum(
+            identifier: .activeEnergyBurned,
+            unit: .kilocalorie(),
+            start: startOfDay,
+            end: now
+        )
+        let activeEnergyLast2h = await querySum(
+            identifier: .activeEnergyBurned,
+            unit: .kilocalorie(),
+            start: twoHoursAgo,
+            end: now
+        )
+        let exerciseMinutes = await querySum(
+            identifier: .appleExerciseTime,
+            unit: .minute(),
+            start: startOfDay,
+            end: now
+        )
+
+        let availability: Availability
+        if [stepsToday, stepsLast2h, activeEnergy, activeEnergyLast2h, exerciseMinutes].contains(where: { $0 != nil }) {
+            availability = .measured
+        } else {
+            availability = .unavailable(reason: .noData)
+        }
+
+        return ActivityInputs(
+            availability: availability,
+            stepsToday: stepsToday,
+            stepsLast2h: stepsLast2h,
+            activeEnergyTodayKcal: activeEnergy,
+            activeEnergyLast2hKcal: activeEnergyLast2h,
+            exerciseMinutesToday: exerciseMinutes,
+            standHoursToday: nil
+        )
+    }
+
+    private func querySum(
+        identifier: HKQuantityTypeIdentifier,
+        unit: HKUnit,
+        start: Date,
+        end: Date
+    ) async -> Double? {
         do {
-            // 今日步数
-            let stepsToday = try await HKQueries.cumulativeSum(
+            return try await HKQueries.cumulativeSum(
                 store: store,
-                identifier: .stepCount,
-                unit: .count(),
-                start: startOfDay,
-                end: now
-            )
-
-            // 过去 2h 步数
-            let stepsLast2h = try await HKQueries.cumulativeSum(
-                store: store,
-                identifier: .stepCount,
-                unit: .count(),
-                start: twoHoursAgo,
-                end: now
-            )
-
-            // 今日活动能量
-            let activeEnergy = try await HKQueries.cumulativeSum(
-                store: store,
-                identifier: .activeEnergyBurned,
-                unit: .kilocalorie(),
-                start: startOfDay,
-                end: now
-            )
-
-            // 过去 2h 活动能量
-            let activeEnergyLast2h = try await HKQueries.cumulativeSum(
-                store: store,
-                identifier: .activeEnergyBurned,
-                unit: .kilocalorie(),
-                start: twoHoursAgo,
-                end: now
-            )
-
-            // 今日运动分钟
-            let exerciseMinutes = try await HKQueries.cumulativeSum(
-                store: store,
-                identifier: .appleExerciseTime,
-                unit: .minute(),
-                start: startOfDay,
-                end: now
-            )
-
-            let hasAnyData = [stepsToday, activeEnergy, exerciseMinutes].compactMap { $0 }.count > 0
-            let availability: Availability = hasAnyData ? .measured : .unavailable(reason: .noData)
-
-            return ActivityInputs(
-                availability: availability,
-                stepsToday: stepsToday,
-                stepsLast2h: stepsLast2h,
-                activeEnergyTodayKcal: activeEnergy,
-                activeEnergyLast2hKcal: activeEnergyLast2h,
-                exerciseMinutesToday: exerciseMinutes,
-                standHoursToday: nil
+                identifier: identifier,
+                unit: unit,
+                start: start,
+                end: end
             )
         } catch {
-            print("ActivityProvider error: \(error)")
-            return ActivityInputs(availability: .unavailable(reason: .noData))
+            print("ActivityProvider query error [\(identifier.rawValue)]: \(error)")
+            return nil
         }
     }
 }

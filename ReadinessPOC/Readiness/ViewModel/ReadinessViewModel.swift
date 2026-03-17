@@ -40,7 +40,7 @@ final class ReadinessViewModel: ObservableObject {
 
     /// Debug 参数变更后重新计算（不重新拉取数据）
     func recalculate() {
-        guard var inputs = rawInputs else { return }
+        var inputs = rawInputs ?? ReadinessInputs.makeDefault(now: debugState.nowOverride ?? .now)
         inputs = debugState.apply(to: inputs)
         effectiveInputs = inputs
         result = ReadinessAggregator.evaluate(inputs: inputs)

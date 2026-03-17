@@ -53,6 +53,8 @@ final class DebugState: ObservableObject {
         guard isEnabled else { return inputs }
 
         var result = inputs
+        var calendar = Calendar.current
+        calendar.timeZone = result.global.timezone
 
         // Global
         if let modeOvr = modeOverride {
@@ -60,11 +62,10 @@ final class DebugState: ObservableObject {
         }
         if let nowOvr = nowOverride {
             result.global.now = nowOvr
-            let cal = Calendar.current
-            result.global.weekday = cal.component(.weekday, from: nowOvr)
+            result.global.weekday = calendar.component(.weekday, from: nowOvr)
             result.global.isWeekend = (result.global.weekday == 1 || result.global.weekday == 7)
             if modeOverride == nil {
-                result.global.mode = ReadinessMode.current(at: nowOvr, in: cal)
+                result.global.mode = ReadinessMode.current(at: nowOvr, in: calendar)
             }
         }
         if isHolidayOverride != nil {
@@ -75,9 +76,13 @@ final class DebugState: ObservableObject {
         if !weatherKitEnabled {
             result.circadian = CircadianInputs(availability: .estimated)
         } else {
-            if let sr = sunriseOverride { result.circadian.sunrise = sr }
-            if let ss = sunsetOverride { result.circadian.sunset = ss }
-            if result.circadian.sunrise != nil || result.circadian.sunset != nil {
+            if let sr = sunriseOverride {
+                result.circadian.sunrise = alignedTime(sr, toMatch: result.global.now, calendar: calendar)
+            }
+            if let ss = sunsetOverride {
+                result.circadian.sunset = alignedTime(ss, toMatch: result.global.now, calendar: calendar)
+            }
+            if sunriseOverride != nil || sunsetOverride != nil {
                 result.circadian.availability = .measured
             }
         }
@@ -90,8 +95,7 @@ final class DebugState: ObservableObject {
             if let s = stepsLast2hOverride { result.activity.stepsLast2h = s }
             if let e = activeEnergyOverride { result.activity.activeEnergyTodayKcal = e }
             if let m = exerciseMinutesOverride { result.activity.exerciseMinutesToday = m }
-            // 如果有任何覆盖数据，标记为 measured
-            if stepsTodayOverride != nil || activeEnergyOverride != nil {
+            if hasActivityOverride {
                 result.activity.availability = .measured
             }
         }
@@ -101,15 +105,78 @@ final class DebugState: ObservableObject {
             result.recovery = RecoveryInputs(availability: .unavailable(reason: .notAuthorized))
         } else {
             if let d = sleepDurationOverride { result.recovery.sleepDurationLastNightHours = d }
-            if let s = sleepStartOverride { result.recovery.sleepStart = s }
-            if let e = sleepEndOverride { result.recovery.sleepEnd = e }
+            if let s = sleepStartOverride {
+                result.recovery.sleepStart = alignedTime(s, toMatch: result.global.now, calendar: calendar)
+            }
+            if let e = sleepEndOverride {
+                let alignedEnd = alignedTime(e, toMatch: result.global.now, calendar: calendar)
+                result.recovery.sleepEnd = alignedEnd
+                result.recovery.wakeUpTime = alignedEnd
+            }
             if let hr = restingHROverride { result.recovery.restingHeartRate = hr }
             if let hrv = hrvOverride { result.recovery.hrvSDNN = hrv }
-            if sleepDurationOverride != nil {
+            if result.recovery.sleepDurationLastNightHours == nil,
+               let sleepStart = result.recovery.sleepStart,
+               let sleepEnd = result.recovery.sleepEnd,
+               sleepEnd > sleepStart {
+                result.recovery.sleepDurationLastNightHours = sleepEnd.timeIntervalSince(sleepStart) / 3600
+            }
+            if hasRecoveryOverride {
                 result.recovery.availability = .measured
             }
         }
 
         return result
+    }
+
+    var hasActivityOverride: Bool {
+        stepsTodayOverride != nil ||
+        stepsLast2hOverride != nil ||
+        activeEnergyOverride != nil ||
+        exerciseMinutesOverride != nil
+    }
+
+    var hasRecoveryOverride: Bool {
+        sleepDurationOverride != nil ||
+        sleepStartOverride != nil ||
+        sleepEndOverride != nil ||
+        restingHROverride != nil ||
+        hrvOverride != nil
+    }
+
+    func resetGlobalOverrides() {
+        modeOverride = nil
+        nowOverride = nil
+        isHolidayOverride = nil
+    }
+
+    func resetCircadianOverrides() {
+        weatherKitEnabled = true
+        sunriseOverride = nil
+        sunsetOverride = nil
+    }
+
+    func resetActivityOverrides() {
+        activityEnabled = true
+        stepsTodayOverride = nil
+        stepsLast2hOverride = nil
+        activeEnergyOverride = nil
+        exerciseMinutesOverride = nil
+    }
+
+    func resetRecoveryOverrides() {
+        recoveryEnabled = true
+        sleepDurationOverride = nil
+        sleepStartOverride = nil
+        sleepEndOverride = nil
+        restingHROverride = nil
+        hrvOverride = nil
+    }
+
+    private func alignedTime(_ value: Date, toMatch anchor: Date, calendar: Calendar) -> Date {
+        let hour = calendar.component(.hour, from: value)
+        let minute = calendar.component(.minute, from: value)
+        let second = calendar.component(.second, from: value)
+        return calendar.date(bySettingHour: hour, minute: minute, second: second, of: anchor) ?? value
     }
 }

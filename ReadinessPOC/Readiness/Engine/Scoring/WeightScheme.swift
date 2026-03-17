@@ -5,8 +5,8 @@ struct WeightScheme {
     let activity: Double
     let recovery: Double
 
-    static let day = WeightScheme(circadian: 0.40, activity: 0.20, recovery: 0.40)
-    static let night = WeightScheme(circadian: 0.35, activity: 0.20, recovery: 0.45)
+    static let day = WeightScheme(circadian: 0.28, activity: 0.40, recovery: 0.32)
+    static let night = WeightScheme(circadian: 0.45, activity: 0.15, recovery: 0.40)
 
     static func scheme(for mode: ReadinessMode) -> WeightScheme {
         switch mode {

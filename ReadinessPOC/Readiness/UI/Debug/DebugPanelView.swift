@@ -12,7 +12,10 @@ struct DebugPanelView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("启用 Debug 覆盖", isOn: $debug.isEnabled)
+                Toggle("启用 Debug 覆盖", isOn: debugBinding(
+                    get: { debug.isEnabled },
+                    set: { debug.isEnabled = $0 }
+                ))
                     .tint(.orange)
             }
 
@@ -27,31 +30,25 @@ struct DebugPanelView: View {
         }
         .navigationTitle("Debug 面板")
         .navigationBarTitleDisplayMode(.inline)
-        .onChange(of: debug.isEnabled) { _ in viewModel.recalculate() }
-        .onChange(of: debug.modeOverride) { _ in viewModel.recalculate() }
-        .onChange(of: debug.nowOverride) { _ in viewModel.recalculate() }
-        .onChange(of: debug.isHolidayOverride) { _ in viewModel.recalculate() }
-        .onChange(of: debug.weatherKitEnabled) { _ in viewModel.recalculate() }
-        .onChange(of: debug.activityEnabled) { _ in viewModel.recalculate() }
-        .onChange(of: debug.recoveryEnabled) { _ in viewModel.recalculate() }
-        .onChange(of: debug.stepsTodayOverride) { _ in viewModel.recalculate() }
-        .onChange(of: debug.sleepDurationOverride) { _ in viewModel.recalculate() }
     }
 
     private var globalSection: some View {
         Section("全局") {
-            Picker("模式", selection: $debug.modeOverride) {
+            Picker("模式", selection: debugBinding(
+                get: { debug.modeOverride },
+                set: { debug.modeOverride = $0 }
+            )) {
                 Text("Auto").tag(Optional<ReadinessMode>.none)
                 Text("Day").tag(Optional<ReadinessMode>.some(.day))
                 Text("Night").tag(Optional<ReadinessMode>.some(.night))
             }
 
-            DatePicker("时间覆盖", selection: Binding(
-                get: { debug.nowOverride ?? .now },
+            DatePicker("时间覆盖", selection: debugBinding(
+                get: { debug.nowOverride ?? currentInputs.global.now },
                 set: { debug.nowOverride = $0 }
             ))
 
-            Picker("节假日", selection: Binding(
+            Picker("节假日", selection: debugBinding(
                 get: { debug.isHolidayOverride },
                 set: { debug.isHolidayOverride = $0 }
             )) {
@@ -60,79 +57,149 @@ struct DebugPanelView: View {
                 Text("否").tag(Optional<Bool>.some(false))
             }
 
-            Button("重置时间") {
-                debug.nowOverride = nil
-                debug.modeOverride = nil
-                viewModel.recalculate()
+            Button("重置全局覆盖") {
+                applyAndRecalculate {
+                    debug.resetGlobalOverrides()
+                }
             }
         }
     }
 
     private var circadianSection: some View {
         Section("节律与日照") {
-            Toggle("WeatherKit 数据", isOn: $debug.weatherKitEnabled)
+            Toggle("WeatherKit 数据", isOn: debugBinding(
+                get: { debug.weatherKitEnabled },
+                set: { debug.weatherKitEnabled = $0 }
+            ))
 
             if debug.weatherKitEnabled {
-                DatePicker("日出", selection: Binding(
-                    get: { debug.sunriseOverride ?? defaultSunrise },
+                DatePicker("日出", selection: debugBinding(
+                    get: { debug.sunriseOverride ?? currentInputs.circadian.sunrise ?? defaultSunrise },
                     set: { debug.sunriseOverride = $0 }
                 ), displayedComponents: .hourAndMinute)
 
-                DatePicker("日落", selection: Binding(
-                    get: { debug.sunsetOverride ?? defaultSunset },
+                DatePicker("日落", selection: debugBinding(
+                    get: { debug.sunsetOverride ?? currentInputs.circadian.sunset ?? defaultSunset },
                     set: { debug.sunsetOverride = $0 }
                 ), displayedComponents: .hourAndMinute)
+            }
+
+            Button("重置节律覆盖") {
+                applyAndRecalculate {
+                    debug.resetCircadianOverrides()
+                }
             }
         }
     }
 
     private var activitySection: some View {
         Section("活动与代谢") {
-            Toggle("活动数据", isOn: $debug.activityEnabled)
+            Toggle("活动数据", isOn: debugBinding(
+                get: { debug.activityEnabled },
+                set: { debug.activityEnabled = $0 }
+            ))
 
             if debug.activityEnabled {
-                sliderRow("今日步数", value: Binding(
-                    get: { debug.stepsTodayOverride ?? 5000 },
-                    set: { debug.stepsTodayOverride = $0 }
-                ), range: 0...20000, unit: "步")
+                numberRow(
+                    "今日步数",
+                    value: debugBinding(
+                        get: { debug.stepsTodayOverride ?? currentInputs.activity.stepsToday ?? 5000 },
+                        set: { debug.stepsTodayOverride = $0 }
+                    ),
+                    range: 0...20000,
+                    step: 100,
+                    unit: "步"
+                )
 
-                sliderRow("过去2h步数", value: Binding(
-                    get: { debug.stepsLast2hOverride ?? 500 },
-                    set: { debug.stepsLast2hOverride = $0 }
-                ), range: 0...5000, unit: "步")
+                numberRow(
+                    "过去2h步数",
+                    value: debugBinding(
+                        get: { debug.stepsLast2hOverride ?? currentInputs.activity.stepsLast2h ?? 500 },
+                        set: { debug.stepsLast2hOverride = $0 }
+                    ),
+                    range: 0...5000,
+                    step: 50,
+                    unit: "步"
+                )
 
-                sliderRow("活动能量", value: Binding(
-                    get: { debug.activeEnergyOverride ?? 200 },
-                    set: { debug.activeEnergyOverride = $0 }
-                ), range: 0...2000, unit: "千卡")
+                numberRow(
+                    "活动能量",
+                    value: debugBinding(
+                        get: { debug.activeEnergyOverride ?? currentInputs.activity.activeEnergyTodayKcal ?? 200 },
+                        set: { debug.activeEnergyOverride = $0 }
+                    ),
+                    range: 0...2000,
+                    step: 10,
+                    unit: "千卡"
+                )
 
-                sliderRow("运动分钟", value: Binding(
-                    get: { debug.exerciseMinutesOverride ?? 30 },
-                    set: { debug.exerciseMinutesOverride = $0 }
-                ), range: 0...180, unit: "分钟")
+                numberRow(
+                    "运动分钟",
+                    value: debugBinding(
+                        get: { debug.exerciseMinutesOverride ?? currentInputs.activity.exerciseMinutesToday ?? 30 },
+                        set: { debug.exerciseMinutesOverride = $0 }
+                    ),
+                    range: 0...180,
+                    step: 5,
+                    unit: "分钟"
+                )
+            }
+
+            Button("重置活动覆盖") {
+                applyAndRecalculate {
+                    debug.resetActivityOverrides()
+                }
             }
         }
     }
 
     private var recoverySection: some View {
         Section("睡眠与恢复") {
-            Toggle("睡眠数据", isOn: $debug.recoveryEnabled)
+            Toggle("睡眠数据", isOn: debugBinding(
+                get: { debug.recoveryEnabled },
+                set: { debug.recoveryEnabled = $0 }
+            ))
 
             if debug.recoveryEnabled {
-                sliderRow("睡眠时长", value: Binding(
-                    get: { debug.sleepDurationOverride ?? 7.5 },
-                    set: { debug.sleepDurationOverride = $0 }
-                ), range: 0...12, unit: "小时")
+                numberRow(
+                    "睡眠时长",
+                    value: debugBinding(
+                        get: { debug.sleepDurationOverride ?? currentInputs.recovery.sleepDurationLastNightHours ?? 7.5 },
+                        set: { debug.sleepDurationOverride = $0 }
+                    ),
+                    range: 0...12,
+                    step: 0.1,
+                    unit: "小时",
+                    decimals: 1
+                )
 
-                sliderRow("静息心率", value: Binding(
-                    get: { debug.restingHROverride ?? 65 },
-                    set: { debug.restingHROverride = $0 }
-                ), range: 40...100, unit: "bpm")
+                numberRow(
+                    "静息心率",
+                    value: debugBinding(
+                        get: { debug.restingHROverride ?? currentInputs.recovery.restingHeartRate ?? 65 },
+                        set: { debug.restingHROverride = $0 }
+                    ),
+                    range: 40...100,
+                    step: 1,
+                    unit: "bpm"
+                )
 
-                sliderRow("HRV", value: Binding(
-                    get: { debug.hrvOverride ?? 45 },
-                    set: { debug.hrvOverride = $0 }
-                ), range: 10...120, unit: "ms")
+                numberRow(
+                    "HRV",
+                    value: debugBinding(
+                        get: { debug.hrvOverride ?? currentInputs.recovery.hrvSDNN ?? 45 },
+                        set: { debug.hrvOverride = $0 }
+                    ),
+                    range: 10...120,
+                    step: 1,
+                    unit: "ms"
+                )
+            }
+
+            Button("重置恢复覆盖") {
+                applyAndRecalculate {
+                    debug.resetRecoveryOverrides()
+                }
             }
         }
     }
@@ -141,6 +208,23 @@ struct DebugPanelView: View {
         Section("输出预览") {
             if let result = viewModel.result {
                 VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("生效时间")
+                        Spacer()
+                        Text(debugTimeString)
+                            .font(.subheadline.monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
+                        Text("生效模式")
+                        Spacer()
+                        Text(result.mode.displayName)
+                            .fontWeight(.medium)
+                    }
+
+                    Divider()
+
                     HStack {
                         Text("总分")
                             .font(.headline)
@@ -213,25 +297,147 @@ struct DebugPanelView: View {
         }
     }
 
-    private func sliderRow(_ label: String, value: Binding<Double>, range: ClosedRange<Double>, unit: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
-                    .font(.subheadline)
-                Spacer()
-                Text("\(Int(value.wrappedValue)) \(unit)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundColor(.secondary)
+    private var currentInputs: ReadinessInputs {
+        viewModel.effectiveInputs ?? viewModel.rawInputs ?? ReadinessInputs.makeDefault()
+    }
+
+    private func debugBinding<Value>(get: @escaping () -> Value, set: @escaping (Value) -> Void) -> Binding<Value> {
+        Binding(
+            get: get,
+            set: { newValue in
+                set(newValue)
+                viewModel.recalculate()
             }
-            Slider(value: value, in: range)
-        }
+        )
+    }
+
+    private func applyAndRecalculate(_ updates: () -> Void) {
+        updates()
+        viewModel.recalculate()
+    }
+
+    private func numberRow(
+        _ label: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double,
+        unit: String,
+        decimals: Int = 0
+    ) -> some View {
+        DebugNumericFieldRow(
+            label: label,
+            unit: unit,
+            value: value,
+            range: range,
+            step: step,
+            decimals: decimals
+        )
     }
 
     private var defaultSunrise: Date {
-        Calendar.current.date(bySettingHour: 6, minute: 30, second: 0, of: .now) ?? .now
+        Calendar.current.date(bySettingHour: 6, minute: 30, second: 0, of: currentInputs.global.now) ?? currentInputs.global.now
     }
 
     private var defaultSunset: Date {
-        Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: .now) ?? .now
+        Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: currentInputs.global.now) ?? currentInputs.global.now
+    }
+
+    private var debugTimeString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM-dd HH:mm"
+        return formatter.string(from: currentInputs.global.now)
+    }
+}
+
+private struct DebugNumericFieldRow: View {
+    let label: String
+    let unit: String
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let step: Double
+    let decimals: Int
+
+    @State private var text: String
+
+    init(
+        label: String,
+        unit: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double,
+        decimals: Int
+    ) {
+        self.label = label
+        self.unit = unit
+        self._value = value
+        self.range = range
+        self.step = step
+        self.decimals = decimals
+        self._text = State(initialValue: Self.format(value.wrappedValue, decimals: decimals))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(label)
+                    .font(.subheadline)
+                Spacer()
+                TextField("", text: $text)
+                    .keyboardType(decimals == 0 ? .numberPad : .decimalPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(width: 84)
+                    .textFieldStyle(.roundedBorder)
+                Text(unit)
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundColor(.secondary)
+            }
+
+            Stepper(value: stepperBinding, in: range, step: step) {
+                Text(Self.format(value, decimals: decimals))
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            }
+        }
+        .onChange(of: text) { newValue in
+            applyText(newValue)
+        }
+        .onChange(of: value) { newValue in
+            let formatted = Self.format(newValue, decimals: decimals)
+            if text != formatted {
+                text = formatted
+            }
+        }
+    }
+
+    private var stepperBinding: Binding<Double> {
+        Binding(
+            get: { value },
+            set: { newValue in
+                value = clampedAndRounded(newValue)
+                text = Self.format(value, decimals: decimals)
+            }
+        )
+    }
+
+    private func applyText(_ raw: String) {
+        guard let parsed = Double(raw.filter { "0123456789.-".contains($0) }), raw != "-", raw != ".", raw != "-." else {
+            return
+        }
+        let adjusted = clampedAndRounded(parsed)
+        if adjusted != value {
+            value = adjusted
+        }
+    }
+
+    private func clampedAndRounded(_ newValue: Double) -> Double {
+        let clamped = min(max(newValue, range.lowerBound), range.upperBound)
+        guard step > 0 else { return clamped }
+        let stepped = (clamped / step).rounded() * step
+        let precision = pow(10.0, Double(decimals))
+        return (stepped * precision).rounded() / precision
+    }
+
+    private static func format(_ value: Double, decimals: Int) -> String {
+        String(format: "%.\(decimals)f", value)
     }
 }

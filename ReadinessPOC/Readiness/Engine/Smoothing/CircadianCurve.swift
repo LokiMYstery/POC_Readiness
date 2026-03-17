@@ -13,24 +13,24 @@ enum CircadianCurve {
     // MARK: - Day Mode 锚点
 
     static let dayAnchors: [Anchor] = [
-        Anchor(minuteOfDay: 360,  score: 55),  // 06:00
-        Anchor(minuteOfDay: 540,  score: 75),  // 09:00
-        Anchor(minuteOfDay: 690,  score: 70),  // 11:30
-        Anchor(minuteOfDay: 840,  score: 60),  // 14:00
-        Anchor(minuteOfDay: 1050, score: 70),  // 17:30
-        Anchor(minuteOfDay: 1230, score: 60),  // 20:30
-        Anchor(minuteOfDay: 1320, score: 50),  // 22:00
-        Anchor(minuteOfDay: 1440, score: 45),  // 24:00
+        Anchor(minuteOfDay: 360,  score: 50),  // 06:00
+        Anchor(minuteOfDay: 540,  score: 78),  // 09:00
+        Anchor(minuteOfDay: 690,  score: 72),  // 11:30
+        Anchor(minuteOfDay: 840,  score: 58),  // 14:00
+        Anchor(minuteOfDay: 1050, score: 66),  // 17:30
+        Anchor(minuteOfDay: 1230, score: 56),  // 20:30
+        Anchor(minuteOfDay: 1320, score: 46),  // 22:00
+        Anchor(minuteOfDay: 1440, score: 40),  // 24:00
     ]
 
     // MARK: - Night Mode 锚点 (使用 1320+ 时间轴)
 
     static let nightAnchors: [Anchor] = [
-        Anchor(minuteOfDay: 1320, score: 60),  // 22:00
-        Anchor(minuteOfDay: 1410, score: 75),  // 23:30
-        Anchor(minuteOfDay: 1530, score: 85),  // 01:30 (= 25:30 h = 1530 min)
-        Anchor(minuteOfDay: 1620, score: 80),  // 03:00 (= 27:00 h = 1620 min)
-        Anchor(minuteOfDay: 1800, score: 65),  // 06:00 (= 30:00 h = 1800 min)
+        Anchor(minuteOfDay: 1320, score: 48),  // 22:00
+        Anchor(minuteOfDay: 1410, score: 72),  // 23:30
+        Anchor(minuteOfDay: 1530, score: 92),  // 01:30 (= 25:30 h = 1530 min)
+        Anchor(minuteOfDay: 1620, score: 86),  // 03:00 (= 27:00 h = 1620 min)
+        Anchor(minuteOfDay: 1800, score: 54),  // 06:00 (= 30:00 h = 1800 min)
     ]
 
     // MARK: - 插值

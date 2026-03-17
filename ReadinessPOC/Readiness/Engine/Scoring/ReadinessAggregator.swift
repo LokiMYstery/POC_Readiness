@@ -103,25 +103,23 @@ enum ReadinessAggregator {
         let primary = ranked.first
 
         let heroTitle = "\(TextTokens.titleStatus(band: band, mode: mode)), \(TextTokens.titleAction(band: band, mode: mode))"
-        let heroSubtitle: String = {
+        let primaryExplanation: String = {
             guard let primary else {
-                return TextTokens.softAdvice(band: band, mode: mode, primaryKind: nil)
+                return "当前可用数据不足，先用更轻的节奏观察身体反馈。"
             }
 
-            let reason = TextTokens.reasonText(
+            return TextTokens.reasonText(
                 for: primary.id,
                 score: primary.value,
                 mode: mode,
                 inputs: inputs
             )
-            let advice = TextTokens.softAdvice(band: band, mode: mode, primaryKind: primary.id)
-            return "\(reason); \(advice)"
         }()
 
         return ReadinessTextOutput(
             heroTitle: heroTitle,
-            heroSubtitle: heroSubtitle,
-            summaryLine: TextTokens.summaryLine(band: band, mode: mode),
+            heroSubtitle: primaryExplanation,
+            summaryLine: primaryExplanation,
             missingHint: TextTokens.missingHint(for: missingFactors(inputs: inputs), mode: mode)
         )
     }
