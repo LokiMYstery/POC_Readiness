@@ -54,6 +54,7 @@
 ## 目录
 - 规格说明：[Readiness_POC_Spec.md](./Readiness_POC_Spec.md)
 - 计划记录：[PLAN_Readiness.md](./PLAN_Readiness.md)
+- 文案配置说明：[Docs/ReadinessCopyConfig.md](./Docs/ReadinessCopyConfig.md)
 
 ## 本地验证
 构建：

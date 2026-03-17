@@ -1,0 +1,89 @@
+{
+  "title": {
+    "day": {
+      "veryLow": { "status": "状态明显下滑", "action": "先降负荷" },
+      "low": { "status": "状态偏低", "action": "先补能量" },
+      "medium": { "status": "状态平稳", "action": "维持节奏" },
+      "good": { "status": "状态良好", "action": "适合推进" },
+      "high": { "status": "状态饱满", "action": "可以释放能量" }
+    },
+    "night": {
+      "veryLow": { "status": "还不太困", "action": "先别硬睡" },
+      "low": { "status": "开始放松", "action": "慢慢收尾" },
+      "medium": { "status": "有些睡意", "action": "可以准备收尾" },
+      "good": { "status": "适合入睡", "action": "建议尽快收尾" },
+      "high": { "status": "睡意很强", "action": "尽快去休息" }
+    }
+  },
+  "reasons": {
+    "day": {
+      "circadian": {
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 58, "text": "现在还没完全进入最好状态，先从轻一点的事情开始会更顺" },
+          { "minInclusive": 58, "maxExclusive": 72, "text": "现在的节奏还算稳，按部就班地推进会比较省力" },
+          { "minInclusive": 72, "text": "这会儿节律状态不错，适合把重要任务往前放一放" }
+        ]
+      },
+      "activity": {
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 60, "text": "身体还没完全热起来，先起身动一动会比硬扛更舒服" },
+          { "minInclusive": 60, "maxExclusive": 76, "text": "活动量基本够用，先照着现在的节奏继续就可以" },
+          { "minInclusive": 76, "text": "身体已经活动开了，这会儿做事会更容易进入状态" }
+        ]
+      },
+      "recovery": {
+        "valueSource": "sleepDurationLastNightHours",
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 6, "text": "昨晚休息不太够，今天先对自己温和一点，别一开始就拉太满" },
+          { "minInclusive": 6, "maxExclusive": 7, "text": "昨晚恢复一般，今天把节奏放稳一点会更舒服" },
+          { "minInclusive": 7, "text": "昨晚休息得还不错，今天可以更从容地安排事情" }
+        ]
+      }
+    },
+    "night": {
+      "circadian": {
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 60, "text": "现在还不算很晚，先别催自己睡，慢慢放松就好" },
+          { "minInclusive": 60, "maxExclusive": 76, "text": "这会儿可以开始收尾，把灯光和注意力一起放下来" },
+          { "minInclusive": 76, "text": "现在已经到了比较适合休息的时段，可以安心去睡" }
+        ]
+      },
+      "activity": {
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 58, "text": "今天活动偏少一些，先别着急睡，给自己一点放松和缓冲时间" },
+          { "minInclusive": 58, "maxExclusive": 76, "text": "今天活动量基本够用，先安静下来，睡意通常会更顺一点" },
+          { "minInclusive": 76, "text": "今天身体已经消耗得差不多了，这会儿休息会更容易进入状态" }
+        ]
+      },
+      "recovery": {
+        "valueSource": "sleepDurationLastNightHours",
+        "ranges": [
+          { "minInclusive": 0, "maxExclusive": 5, "text": "昨晚睡得偏少，今晚可以早点收尾，别再硬撑了" },
+          { "minInclusive": 5, "maxExclusive": 6, "text": "昨晚休息不太够，今晚更适合早点放下事情，优先照顾睡眠" },
+          { "minInclusive": 6, "maxExclusive": 7, "text": "今晚可以开始收一收，让自己慢慢进入休息状态" },
+          { "minInclusive": 7, "text": "昨晚睡得还可以，如果现在还不困，也不用给自己太大压力" }
+        ]
+      }
+    }
+  },
+  "missingLabels": {
+    "day": {
+      "circadian": "节律",
+      "activity": "活动",
+      "recovery": "恢复"
+    },
+    "night": {
+      "circadian": "节律",
+      "activity": "活动",
+      "recovery": "睡眠压力"
+    }
+  },
+  "messages": {
+    "insufficientData": {
+      "heroSubtitle": "当前可用数据不足，先用更轻的节奏观察身体反馈。",
+      "summaryLine": "当前结果基于非常有限的数据，先把它当成趋势提示而不是绝对判断。"
+    },
+    "allHealthDataMissing": "所有健康数据均未接入。",
+    "partialDataMissingTemplate": "部分数据未接入: {{labels}}，当前结果基于可用信息估计。"
+  }
+}

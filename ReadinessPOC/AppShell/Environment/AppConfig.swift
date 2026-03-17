@@ -8,4 +8,8 @@ enum AppConfig {
     /// 权重（可覆盖）
     static let dayWeights = WeightScheme.day
     static let nightWeights = WeightScheme.night
+
+    /// 文案资源
+    static let readinessCopyDirectoryName = "Readiness"
+    static let readinessCopyFileName = "readiness-copy.json"
 }

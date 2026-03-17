@@ -20,6 +20,8 @@ targets:
         excludes:
           - "*.entitlements"
           - "Info.plist"
+    resources:
+      - path: ReadinessPOC/Resources
     info:
       path: ReadinessPOC/Info.plist
       properties:

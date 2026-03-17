@@ -19,6 +19,8 @@
 		42BFD7892E7D7B467E8339F9 /* WeightScheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1DFB1FB576384F7E4E1EDA /* WeightScheme.swift */; };
 		47F5365B33AE1F0EEDAF2DDC /* HKQueries.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2161D9C10C9F83110180F07C /* HKQueries.swift */; };
 		49D25708F63D4C7ED2AADBB2 /* DebugState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE579EDE45526FF0BA02CD2 /* DebugState.swift */; };
+		4A1C2E3F4B5D6A7C8E9F0011 /* ReadinessCopy.default.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A1C2E3F4B5D6A7C8E9F0012 /* ReadinessCopy.default.json */; };
+		4A1C2E3F4B5D6A7C8E9F0013 /* ReadinessCopy.schema.json in Resources */ = {isa = PBXBuildFile; fileRef = 4A1C2E3F4B5D6A7C8E9F0014 /* ReadinessCopy.schema.json */; };
 		5079C8A3E9C6357B49B2DF4F /* ReadinessOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794997E21E76ACACCF25E8E6 /* ReadinessOverviewView.swift */; };
 		52754D0A176BF78FFE98AFAA /* ActivityDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A2DB60E53AA272DADF32C5 /* ActivityDetailView.swift */; };
 		5B29EF0189E4A05B1F8B8A60 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B4C466EA7B9A4AB8EDC0EEE /* CoreLocation.framework */; };
@@ -71,6 +73,8 @@
 		2BEB18739D981F2015B8D9A6 /* ReadinessPOC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReadinessPOC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C3CBB6B853C0D1B95158109 /* TimeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeProvider.swift; sourceTree = "<group>"; };
 		2ED6A857264E4FB0CFD5BABC /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		4A1C2E3F4B5D6A7C8E9F0012 /* ReadinessCopy.default.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ReadinessCopy.default.json; sourceTree = "<group>"; };
+		4A1C2E3F4B5D6A7C8E9F0014 /* ReadinessCopy.schema.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ReadinessCopy.schema.json; sourceTree = "<group>"; };
 		38DB10E2D2D6776652BEB250 /* DebugFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugFlags.swift; sourceTree = "<group>"; };
 		3D7E12DA467CC08EBA374772 /* CircadianCurve.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircadianCurve.swift; sourceTree = "<group>"; };
 		483C6B29724F7D71AF424A08 /* WeatherKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WeatherKit.framework; path = System/Library/Frameworks/WeatherKit.framework; sourceTree = SDKROOT; };
@@ -204,12 +208,22 @@
 			path = Environment;
 			sourceTree = "<group>";
 		};
+		4A1C2E3F4B5D6A7C8E9F0015 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				4A1C2E3F4B5D6A7C8E9F0012 /* ReadinessCopy.default.json */,
+				4A1C2E3F4B5D6A7C8E9F0014 /* ReadinessCopy.schema.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		5EF1F209F1D2FA87AF9944FD /* ReadinessPOC */ = {
 			isa = PBXGroup;
 			children = (
 				72FA1C9B8017C3C6079766E1 /* ReadinessPOCApp.swift */,
 				D5CB91CBC7B2A891C81FE183 /* AppShell */,
 				AA07026539CF52665D9BD1A9 /* Readiness */,
+				4A1C2E3F4B5D6A7C8E9F0015 /* Resources */,
 			);
 			path = ReadinessPOC;
 			sourceTree = "<group>";
@@ -393,6 +407,7 @@
 			buildPhases = (
 				3116E39AA8E8A42BA86EBBEA /* Sources */,
 				77A7AFB35F761FCB20195682 /* Frameworks */,
+				4A1C2E3F4B5D6A7C8E9F0016 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -432,6 +447,18 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4A1C2E3F4B5D6A7C8E9F0016 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A1C2E3F4B5D6A7C8E9F0011 /* ReadinessCopy.default.json in Resources */,
+				4A1C2E3F4B5D6A7C8E9F0013 /* ReadinessCopy.schema.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3116E39AA8E8A42BA86EBBEA /* Sources */ = {

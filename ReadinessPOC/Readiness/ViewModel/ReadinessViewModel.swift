@@ -34,7 +34,11 @@ final class ReadinessViewModel: ObservableObject {
             effectiveInputs = inputs
 
             // 计算结果
-            result = ReadinessAggregator.evaluate(inputs: inputs)
+            do {
+                result = try ReadinessAggregator.evaluate(inputs: inputs)
+            } catch {
+                handleCopyFailure(error)
+            }
         }
     }
 
@@ -43,11 +47,24 @@ final class ReadinessViewModel: ObservableObject {
         var inputs = rawInputs ?? ReadinessInputs.makeDefault(now: debugState.nowOverride ?? .now)
         inputs = debugState.apply(to: inputs)
         effectiveInputs = inputs
-        result = ReadinessAggregator.evaluate(inputs: inputs)
+        do {
+            result = try ReadinessAggregator.evaluate(inputs: inputs)
+        } catch {
+            handleCopyFailure(error)
+        }
     }
 
     /// 强制刷新（重新拉取 + 计算）
     func refresh() {
         load()
+    }
+
+    private func handleCopyFailure(_ error: Error) {
+        result = nil
+        #if DEBUG
+        assertionFailure("Readiness copy loading failed: \(error.localizedDescription)")
+        #else
+        NSLog("Readiness copy loading failed: %@", error.localizedDescription)
+        #endif
     }
 }

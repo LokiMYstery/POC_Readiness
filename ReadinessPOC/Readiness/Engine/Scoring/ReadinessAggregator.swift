@@ -1,7 +1,10 @@
 import Foundation
 
 enum ReadinessAggregator {
-    static func evaluate(inputs: ReadinessInputs) -> ReadinessResult {
+    static func evaluate(
+        inputs: ReadinessInputs,
+        textResolver: ReadinessTextResolver = .shared
+    ) throws -> ReadinessResult {
         let mode = inputs.global.mode
         let scheme = WeightScheme.scheme(for: mode)
 
@@ -51,7 +54,7 @@ enum ReadinessAggregator {
                 overallScore: 50,
                 band: band,
                 subScores: [],
-                text: fallbackText(mode: mode, band: band),
+                text: try fallbackText(mode: mode, band: band, textResolver: textResolver),
                 timestamp: inputs.global.now
             )
         }
@@ -88,7 +91,13 @@ enum ReadinessAggregator {
             overallScore: finalScore,
             band: band,
             subScores: subScores,
-            text: generateText(mode: mode, band: band, subScores: subScores, inputs: inputs),
+            text: try generateText(
+                mode: mode,
+                band: band,
+                subScores: subScores,
+                inputs: inputs,
+                textResolver: textResolver
+            ),
             timestamp: inputs.global.now
         )
     }
@@ -97,30 +106,18 @@ enum ReadinessAggregator {
         mode: ReadinessMode,
         band: ReadinessBand,
         subScores: [SubScore],
-        inputs: ReadinessInputs
-    ) -> ReadinessTextOutput {
+        inputs: ReadinessInputs,
+        textResolver: ReadinessTextResolver
+    ) throws -> ReadinessTextOutput {
         let ranked = prioritizedFactors(subScores: subScores)
         let primary = ranked.first
 
-        let heroTitle = "\(TextTokens.titleStatus(band: band, mode: mode)), \(TextTokens.titleAction(band: band, mode: mode))"
-        let primaryExplanation: String = {
-            guard let primary else {
-                return "当前可用数据不足，先用更轻的节奏观察身体反馈。"
-            }
-
-            return TextTokens.reasonText(
-                for: primary.id,
-                score: primary.value,
-                mode: mode,
-                inputs: inputs
-            )
-        }()
-
-        return ReadinessTextOutput(
-            heroTitle: heroTitle,
-            heroSubtitle: primaryExplanation,
-            summaryLine: primaryExplanation,
-            missingHint: TextTokens.missingHint(for: missingFactors(inputs: inputs), mode: mode)
+        return try textResolver.resolve(
+            mode: mode,
+            band: band,
+            primaryFactor: primary,
+            missingFactors: missingFactors(inputs: inputs),
+            inputs: inputs
         )
     }
 
@@ -145,12 +142,29 @@ enum ReadinessAggregator {
         return measured + estimated
     }
 
-    private static func fallbackText(mode: ReadinessMode, band: ReadinessBand) -> ReadinessTextOutput {
-        ReadinessTextOutput(
-            heroTitle: "\(TextTokens.titleStatus(band: band, mode: mode)), \(TextTokens.titleAction(band: band, mode: mode))",
-            heroSubtitle: "当前可用数据不足，先用更轻的节奏观察身体反馈。",
-            summaryLine: "当前结果基于非常有限的数据，先把它当成趋势提示而不是绝对判断。",
-            missingHint: "所有健康数据均未接入。"
+    private static func fallbackText(
+        mode: ReadinessMode,
+        band: ReadinessBand,
+        textResolver: ReadinessTextResolver
+    ) throws -> ReadinessTextOutput {
+        var text = try textResolver.resolve(
+            mode: mode,
+            band: band,
+            primaryFactor: nil,
+            missingFactors: [.activity, .recovery],
+            inputs: ReadinessInputs.makeDefault(now: .now)
         )
+        text = ReadinessTextOutput(
+            heroTitle: text.heroTitle,
+            heroSubtitle: text.heroSubtitle,
+            summaryLine: text.summaryLine,
+            missingHint: try allHealthDataMissingHint(from: textResolver)
+        )
+        return text
+    }
+
+    private static func allHealthDataMissingHint(from textResolver: ReadinessTextResolver) throws -> String {
+        let configuration = try textResolver.store.load()
+        return configuration.messages.allHealthDataMissing
     }
 }
